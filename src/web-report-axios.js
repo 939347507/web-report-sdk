@@ -445,6 +445,25 @@ function Performance(option, fn) {
                 conf.errorList.push(defaults);
                 if (conf.page === location.href && !conf.haveAjax) reportData(3);
             })
+
+            // console.error
+            var oldError = console.error;
+            console.error = function (error) {
+                let defaults = Object.assign({}, errordefo);
+                setTimeout(function() {
+                    defaults.msg = error
+                    defaults.method = 'GET'
+                    defaults.data = {
+                        resourceUrl: location.href,
+                    };
+                    defaults.t = new Date().getTime();
+                    conf.errorList.push(defaults)
+                    // 上报错误信息
+                    if (conf.page === location.href && !conf.haveAjax && !ajaxTime) reportData(3);
+                }, 0);
+
+                return oldError.apply(console, arguments);
+            };
         }
 
         // ajax统一上报入口
