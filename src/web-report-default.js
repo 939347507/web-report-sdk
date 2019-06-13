@@ -13,31 +13,52 @@ if (typeof require === 'function' && typeof exports === "object" && typeof modul
 window.ERRORLIST = [];
 window.ADDDATA = {};
 Performance.addError = function(err) {
-    err = {
+    let _err = Object.assign({
+        t: new Date().getTime(),
         method: 'GET',
-        msg: err.msg,
+        msg: '',
         n: 'js',
         data: {
             col: err.col,
             line: err.line,
             resourceUrl: err.resourceUrl
         }
-    }
-    ERRORLIST.push(err)
+    }, err);
+
+    ERRORLIST.push(_err)
 }
+
+Performance.addJsError = function(err) {
+    let _err = Object.assign({
+        t: new Date().getTime(),
+        method: 'GET',
+        msg: '',
+        n: 'js',
+        data: {
+
+        }
+    }, err);
+
+    ERRORLIST.push(_err)
+}
+
+Performance.addAjaxError = function(err) {
+    let _err = Object.assign({
+        t: new Date().getTime(),
+        method: 'GET',
+        msg: '',
+        n: 'ajax',
+        data: {
+
+        }
+    }, err);
+
+    ERRORLIST.push(_err)
+}
+
 Performance.addData = function(fn) { fn && fn(ADDDATA) };
 
-function randomString(len) {
-    len = len || 10;
-    var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz123456789';
-    var maxPos = $chars.length;
-    var pwd = '';
-    for (let i = 0; i < len; i++) {
-        pwd = pwd + $chars.charAt(Math.floor(Math.random() * maxPos));
-    }
-    return pwd + new Date().getTime();
-}
-
+window.ReportData = null;
 // web msgs report function
 function Performance(option, fn) {
     try {
@@ -105,12 +126,6 @@ function Performance(option, fn) {
 
         // error上报
         if (opt.isError) _error();
-
-        // 绑定onload事件
-        addEventListener("load", function() {
-            loadTime = new Date().getTime() - beginTime
-            getLargeTime();
-        }, false);
 
         // 执行fetch重写
         if (opt.isAjax || opt.isError) _fetch();
@@ -227,7 +242,7 @@ function Performance(option, fn) {
 
         // report date
         // @type  1:页面级性能上报  2:页面ajax性能上报  3：页面内错误信息上报
-        function reportData(type = 1) {
+        ReportData = function (type = 1) {
             setTimeout(() => {
                 if (opt.isPage) perforPage();
                 if (opt.isResource || opt.isAjax) perforResource();
@@ -661,5 +676,24 @@ function Performance(option, fn) {
             ajaxTime = 0
             fetchTime = 0
         }
+
+
+        // 绑定onload事件
+        addEventListener("load", function() {
+            loadTime = new Date().getTime() - beginTime
+            getLargeTime();
+        }, false);
+
     } catch (err) {}
+}
+
+function randomString(len) {
+    len = len || 10;
+    var $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz123456789';
+    var maxPos = $chars.length;
+    var pwd = '';
+    for (let i = 0; i < len; i++) {
+        pwd = pwd + $chars.charAt(Math.floor(Math.random() * maxPos));
+    }
+    return pwd + new Date().getTime();
 }
